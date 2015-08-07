@@ -5,39 +5,38 @@ This script adds all new data on the day it is ran. It will for now update
 all S&P 500 tickers in PetitMorinTrading database with today<s close data
 and will be run everyday on crontab
 It has to be in the same folder as addDailyPrices.py and Symbols.py
-The Script Takes six arguments:
-    1. Mandatory - the db username of the user
-    2. Mandatory - the db password of the user
-    3. Mandatory - A boolean 1 - we use systemdate.today 0 - user will input a date
-    4. Optional  - The year
-    5. Optional  - The Month
-    6. Optional  - The Day
+The Script Takes four arguments:
+    1. Mandatory - A boolean 1 - we use systemdate.today 0 - user will
+input a date
+    2. Optional  - The year
+    3. Optional  - The Month
+    4. Optional  - The Day
 Examples:
-    ./dailyPriceUpdate fred a1234567 1
-    ./dailyPriceUpdate fred a1234567 0 2015 08 03
+    usr/bin/python ./dailyPriceUpdate fred a1234567 1
+    usr/bin/python ./dailyPriceUpdate fred a1234567 0 2015 08 03
 """
 import datetime
 import sys
 import addDailyPrices as adp
+import MySQLdb as mdb
 
 db_host = 'localhost'
-db_user = sys.argv[1]
-db_pass = sys.argv[2]
+db_user = 'fred'
+db_pass = 'a1234567'
 db_name = 'PetitMorinTrading'
 con = mdb.connect(db_host, db_user, db_pass, db_name)
 
-date_bool = sys.argv[3]
+date_bool = sys.argv[1]
 
 if date_bool:
     today = datetime.date.today().timetuple()[0:3]
 else:
-    today = datetime.date(sys.argv[4],sys.argv[5],sys.argv[6]).timetuple()[0:3]
+    today = datetime.date(sys.argv[2],sys.argv[3],sys.argv[4]).timetuple()[0:3]
 
 tickers = adp.obtain_list_of_db_tickers()
 for i, t in enumerate(tickers):
 	print("Adding data for %s: %s out of %s" %
-	(t[1], i+1, lentickers)
-	)
-	yf_data = get_daily_historic_data_yahoo(t[1], today, today)
+	(t[1], i+1, len(tickers)))
+	yf_data = adp.get_daily_historic_data_yahoo(t[1], today, today)
 	adp.insert_daily_data_into_db('1', t[0], yf_data)
 print("Successfully added Yahoo Finance pricing data to DB.")
